@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>RUGBO</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg: #f4f9f5;
+      --surface: #ffffff;
+      --surface-2: #eaf5ec;
+      --green: #169B62;
+      --green-dark: #0d7a4a;
+      --green-light: #e6f5ed;
+      --green-border: rgba(22, 155, 98, 0.25);
+      --gold: #c8a415;
+      --gold-soft: rgba(200, 164, 21, 0.1);
+      --gold-border: rgba(200, 164, 21, 0.4);
+      --hard-bg: #fef3f0;
+      --hard-border: rgba(220, 80, 50, 0.25);
+      --hard-text: #b84325;
+      --text: #1a2e1f;
+      --text-dim: #6b8272;
+      --border: rgba(0,0,0,0.07);
+      --radius: 14px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      color: var(--text);
+      user-select: none;
+    }
+
+    .container {
+      max-width: 480px;
+      width: 100%;
+      padding-bottom: 24px;
+    }
+
+    .header {
+      text-align: center;
+      padding: 24px 16px 20px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--green);
+    }
+
+    .header .subtitle {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin-top: 5px;
+      font-weight: 500;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      margin: 0 4px 16px;
+    }
+
+    .stat-pill {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      box-shadow: var(--shadow);
+      transition: all 0.3s ease;
+    }
+
+    .stat-pill.progress-pill { color: var(--green); }
+    .stat-pill.bingo-pill { color: var(--text-dim); }
+
+    .stat-pill.bingo-pill.won {
+      background: var(--gold-soft);
+      border-color: var(--gold-border);
+      color: var(--gold);
+      animation: winPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes winPulse {
+      0%, 100% { box-shadow: 0 0 12px rgba(200,164,21,0.15); }
+      50% { box-shadow: 0 0 24px rgba(200,164,21,0.3); }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      padding: 0 4px;
+      margin-bottom: 16px;
+    }
+
+    .cell {
+      aspect-ratio: 1;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.64rem;
+      padding: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      word-break: break-word;
+      line-height: 1.2;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .cell:active { transform: scale(0.92); }
+
+    .cell.marked {
+      background: var(--green-light);
+      border-color: var(--green-border);
+      color: var(--green-dark);
+    }
+
+    .cell.marked::after {
+      content: '✓';
+      position: absolute;
+      top: 3px;
+      right: 5px;
+      font-size: 0.55rem;
+      font-weight: 800;
+      opacity: 0.6;
+    }
+
+    .cell.hard {
+      border-color: var(--hard-border);
+      background: var(--hard-bg);
+    }
+
+    .cell.hard.marked {
+      background: var(--green-light);
+      border-color: var(--green-border);
+      color: var(--green-dark);
+    }
+
+    .cell.hard::before {
+      content: '★';
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      font-size: 0.45rem;
+      color: var(--hard-text);
+      opacity: 0.5;
+    }
+
+    .cell.hard.marked::before { opacity: 0.3; color: var(--green); }
+
+    .cell.free {
+      background: var(--green);
+      border-color: var(--green-dark);
+      color: white;
+      cursor: default;
+      font-weight: 700;
+    }
+
+    .cell.free:active { transform: none; }
+
+    .buttons {
+      display: flex;
+      gap: 8px;
+      padding: 0 4px;
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 8px;
+      color: var(--text);
+      font-size: 0.73rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+      background: var(--surface-2);
+    }
+
+    .word-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin: 0 4px 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .word-section label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .word-section .label-hint {
+      font-size: 0.6rem;
+      font-weight: 500;
+      color: var(--text-dim);
+      opacity: 0.7;
+      text-transform: none;
+      letter-spacing: 0;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 0.75rem;
+      font-family: inherit;
+      color: var(--text);
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus { border-color: var(--green); }
+    textarea::placeholder { color: var(--text-dim); opacity: 0.6; }
+
+    .hard-section textarea { border-color: var(--hard-border); }
+    .hard-section textarea:focus { border-color: var(--hard-text); }
+    .hard-section label { color: var(--hard-text); }
+
+    .create-btn {
+      width: 100%;
+      margin-top: 12px;
+      background: var(--green);
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .create-btn:active { transform: scale(0.97); opacity: 0.9; }
+
+    .info {
+      text-align: center;
+      font-size: 0.63rem;
+      color: var(--text-dim);
+      margin-top: 16px;
+      padding: 0 20px;
+      line-height: 1.7;
+    }
+
+    .confetti-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    @media (max-width: 380px) {
+      .grid { gap: 4px; }
+      .cell { font-size: 0.57rem; border-radius: 10px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🏉 RUGBO 🏉</h1>
+    <div class="subtitle">Tap to mark · Each phone gets its own card</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-pill progress-pill" id="progressDisplay">0 / 24 marked</div>
+    <div class="stat-pill bingo-pill" id="bingoDisplay">No bingo yet</div>
+  </div>
+
+  <div class="grid" id="bingoGrid"></div>
+
+  <div class="buttons">
+    <button class="btn" id="undoBtn">↩ Undo</button>
+    <button class="btn" id="resetBtn">✕ Reset</button>
+    <button class="btn" id="reshuffleBtn">⟳ New Card</button>
+  </div>
+
+  <div class="word-section">
+    <label>☘️ Easy terms</label>
+    <span class="label-hint">These fill most of the card (16 spots)</span>
+    <textarea id="easyInput" rows="2" placeholder="Comma-separated: try, conversion, scrum, penalty, ..."></textarea>
+  </div>
+
+  <div class="word-section hard-section">
+    <label>★ Hard terms</label>
+    <span class="label-hint">These go on diagonals & corners — blocking bingo lines (8 spots)</span>
+    <textarea id="hardInput" rows="2" placeholder="Comma-separated: drop goal, red card, hat-trick, ..."></textarea>
+  </div>
+
+  <button class="create-btn" id="createCardBtn" style="margin: 0 4px; width: calc(100% - 8px);">Generate Card</button>
+
+  <div class="info">
+    ★ Hard terms sit on corners & diagonals — the cells that appear in the most winning lines.<br>
+    Each phone saves its own card. Close & reopen — your game continues.
+  </div>
+</div>
+
+<canvas class="confetti-overlay" id="confettiCanvas"></canvas>
+
+<script>
+  const DEFAULT_EASY = [
+    "Try scored", "Conversion", "Scrum", "Penalty kick", "Lineout",
+    "Knock-on", "Ruck", "Maul", "High tackle", "Offside",
+    "Forward pass", "Garryowen", "TMO check", "Yellow card", "Advantage",
+    "22 drop-out"
+  ];
+
+  const DEFAULT_HARD = [
+    "Drop goal", "Red card", "Sin bin return try", "Hat-trick",
+    "70m+ penalty", "Intercept try", "Prop scores", "Captain's challenge"
+  ];
+
+  // Diagonal positions (corners + diagonal cells, excluding center 12)
+  // These participate in 3 winning lines each — hardest to block
+  const HARD_POSITIONS = [0, 4, 6, 8, 16, 18, 20, 24];
+  const EASY_POSITIONS = [1,2,3,5,7,9,10,11,13,14,15,17,19,21,22,23];
+
+  let easyWords = [];
+  let hardWords = [];
+  let currentGrid = [];
+  let gridDifficulty = []; // 'easy', 'hard', or 'free'
+  let marked = new Array(25).fill(false);
+  let winFlag = false;
+  let history = [];
+
+  const gridContainer = document.getElementById('bingoGrid');
+  const progressSpan = document.getElementById('progressDisplay');
+  const bingoSpan = document.getElementById('bingoDisplay');
+
+  function shuffleArray(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function padArray(arr, defaults, needed) {
+    let pool = [...arr];
+    if (pool.length === 0) pool = [...defaults];
+    while (pool.length < needed) pool.push(...(arr.length > 0 ? arr : defaults));
+    return shuffleArray(pool).slice(0, needed);
+  }
+
+  function buildGrid(easyList, hardList) {
+    const easyFinal = padArray(easyList, DEFAULT_EASY, 16);
+    const hardFinal = padArray(hardList, DEFAULT_HARD, 8);
+
+    const shuffledEasy = shuffleArray(easyFinal);
+    const shuffledHard = shuffleArray(hardFinal);
+
+    const grid = new Array(25);
+    const difficulty = new Array(25);
+
+    let hIdx = 0, eIdx = 0;
+    for (let i = 0; i < 25; i++) {
+      if (i === 12) {
+        grid[i] = "★ FREE";
+        difficulty[i] = "free";
+      } else if (HARD_POSITIONS.includes(i)) {
+        grid[i] = shuffledHard[hIdx++];
+        difficulty[i] = "hard";
+      } else {
+        grid[i] = shuffledEasy[eIdx++];
+        difficulty[i] = "easy";
+      }
+    }
+    return { grid, difficulty, easyUsed: easyFinal, hardUsed: hardFinal };
+  }
+
+  function countMarked() {
+    let c = 0;
+    for (let i = 0; i < 25; i++) if (i !== 12 && marked[i]) c++;
+    return c;
+  }
+
+  function checkBingo() {
+    for (let r = 0; r < 5; r++) {
+      let win = true;
+      for (let c = 0; c < 5; c++) if (!marked[r*5 + c]) { win = false; break; }
+      if (win) return true;
+    }
+    for (let c = 0; c < 5; c++) {
+      let win = true;
+      for (let r = 0; r < 5; r++) if (!marked[r*5 + c]) { win = false; break; }
+      if (win) return true;
+    }
+    let d1 = true, d2 = true;
+    for (let i = 0; i < 5; i++) {
+      if (!marked[i*5 + i]) d1 = false;
+      if (!marked[i*5 + (4-i)]) d2 = false;
+    }
+    return d1 || d2;
+  }
+
+  function fireConfetti() {
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const particles = [];
+    const colors = ['#169B62','#ffffff','#169B62','#c8a415','#0d7a4a','#34d399'];
+    for (let i = 0; i < 100; i++) {
+      particles.push({
+        x: canvas.width / 2 + (Math.random() - 0.5) * 250,
+        y: canvas.height / 2,
+        vx: (Math.random() - 0.5) * 14,
+        vy: (Math.random() - 1) * 16 - 4,
+        size: Math.random() * 7 + 3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * 360,
+        rotSpeed: (Math.random() - 0.5) * 12,
+        life: 1
+      });
+    }
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = false;
+      for (const p of particles) {
+        if (p.life <= 0) continue;
+        alive = true;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.4;
+        p.rotation += p.rotSpeed;
+        p.life -= 0.013;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation * Math.PI / 180);
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size * 0.6);
+        ctx.restore();
+      }
+      if (alive) requestAnimationFrame(animate);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    animate();
+  }
+
+  function updateUI() {
+    progressSpan.innerText = `${countMarked()} / 24 marked`;
+    const bingoNow = checkBingo();
+    if (bingoNow && !winFlag) {
+      winFlag = true;
+      bingoSpan.innerText = "🏉 RUGBO!! 🏉";
+      bingoSpan.classList.add('won');
+      fireConfetti();
+    } else if (!bingoNow) {
+      winFlag = false;
+      bingoSpan.innerText = "No bingo yet";
+      bingoSpan.classList.remove('won');
+    }
+  }
+
+  function renderGrid() {
+    gridContainer.innerHTML = "";
+    for (let i = 0; i < 25; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      if (marked[i]) cell.classList.add('marked');
+      if (i === 12) cell.classList.add('free');
+      else if (gridDifficulty[i] === 'hard') cell.classList.add('hard');
+      cell.innerText = currentGrid[i];
+      if (i !== 12) {
+        cell.addEventListener('click', () => toggleMark(i));
+      }
+      gridContainer.appendChild(cell);
+    }
+    updateUI();
+  }
+
+  function toggleMark(idx) {
+    if (idx === 12) return;
+    history.push({ index: idx, oldValue: marked[idx] });
+    if (history.length > 50) history.shift();
+    marked[idx] = !marked[idx];
+    saveState();
+    renderGrid();
+  }
+
+  function undoLast() {
+    if (history.length === 0) return;
+    const last = history.pop();
+    marked[last.index] = last.oldValue;
+    saveState();
+    renderGrid();
+  }
+
+  function resetMarks() {
+    if (!confirm("Reset all marks?")) return;
+    history = [];
+    for (let i = 0; i < 25; i++) marked[i] = (i === 12);
+    winFlag = false;
+    saveState();
+    renderGrid();
+  }
+
+  function reshuffleCard() {
+    const { grid, difficulty, easyUsed, hardUsed } = buildGrid(easyWords, hardWords);
+    currentGrid = grid;
+    gridDifficulty = difficulty;
+    easyWords = easyUsed;
+    hardWords = hardUsed;
+    history = [];
+    for (let i = 0; i < 25; i++) marked[i] = (i === 12);
+    winFlag = false;
+    saveState();
+    renderGrid();
+    document.getElementById('easyInput').value = easyWords.join(', ');
+    document.getElementById('hardInput').value = hardWords.join(', ');
+  }
+
+  function createCardFromWords() {
+    const rawEasy = document.getElementById('easyInput').value;
+    const rawHard = document.getElementById('hardInput').value;
+    let easy = rawEasy.split(/[,\n]+/).map(s => s.trim()).filter(s => s.length > 0);
+    let hard = rawHard.split(/[,\n]+/).map(s => s.trim()).filter(s => s.length > 0);
+    if (easy.length === 0 && hard.length === 0) {
+      alert("Enter at least some words in either field.");
+      return;
+    }
+    const { grid, difficulty, easyUsed, hardUsed } = buildGrid(easy, hard);
+    currentGrid = grid;
+    gridDifficulty = difficulty;
+    easyWords = easyUsed;
+    hardWords = hardUsed;
+    history = [];
+    for (let i = 0; i < 25; i++) marked[i] = (i === 12);
+    winFlag = false;
+    saveState();
+    renderGrid();
+    document.getElementById('easyInput').value = easyWords.join(', ');
+    document.getElementById('hardInput').value = hardWords.join(', ');
+  }
+
+  function saveState() {
+    localStorage.setItem('rugbo_easy', JSON.stringify(easyWords));
+    localStorage.setItem('rugbo_hard', JSON.stringify(hardWords));
+    localStorage.setItem('rugbo_grid', JSON.stringify(currentGrid));
+    localStorage.setItem('rugbo_diff', JSON.stringify(gridDifficulty));
+    localStorage.setItem('rugbo_marked', JSON.stringify(marked));
+    localStorage.setItem('rugbo_win', JSON.stringify(winFlag));
+  }
+
+  function loadState() {
+    try {
+      const e = localStorage.getItem('rugbo_easy');
+      const h = localStorage.getItem('rugbo_hard');
+      const g = localStorage.getItem('rugbo_grid');
+      const d = localStorage.getItem('rugbo_diff');
+      const m = localStorage.getItem('rugbo_marked');
+      const w = localStorage.getItem('rugbo_win');
+      if (g && m && d) {
+        easyWords = e ? JSON.parse(e) : DEFAULT_EASY;
+        hardWords = h ? JSON.parse(h) : DEFAULT_HARD;
+        currentGrid = JSON.parse(g);
+        gridDifficulty = JSON.parse(d);
+        marked = JSON.parse(m);
+        winFlag = w ? JSON.parse(w) : false;
+        marked[12] = true;
+        renderGrid();
+        document.getElementById('easyInput').value = easyWords.join(', ');
+        document.getElementById('hardInput').value = hardWords.join(', ');
+        return true;
+      }
+    } catch(e) { console.warn(e); }
+    return false;
+  }
+
+  function initGame() {
+    if (!loadState()) {
+      const { grid, difficulty, easyUsed, hardUsed } = buildGrid(DEFAULT_EASY, DEFAULT_HARD);
+      easyWords = easyUsed;
+      hardWords = hardUsed;
+      currentGrid = grid;
+      gridDifficulty = difficulty;
+      for (let i = 0; i < 25; i++) marked[i] = (i === 12);
+      winFlag = false;
+      renderGrid();
+      document.getElementById('easyInput').value = easyWords.join(', ');
+      document.getElementById('hardInput').value = hardWords.join(', ');
+      saveState();
+    }
+  }
+
+  document.getElementById('undoBtn').addEventListener('click', undoLast);
+  document.getElementById('resetBtn').addEventListener('click', resetMarks);
+  document.getElementById('reshuffleBtn').addEventListener('click', reshuffleCard);
+  document.getElementById('createCardBtn').addEventListener('click', createCardFromWords);
+
+  initGame();
+</script>
+</body>
+</html>
